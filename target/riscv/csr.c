@@ -1124,6 +1124,7 @@ static const char valid_vm_1_10_32[16] = {
 
 static const char valid_vm_1_10_64[16] = {
     [VM_1_10_MBARE] = 1,
+
     [VM_1_10_SV39] = 1,
     [VM_1_10_SV48] = 1,
     [VM_1_10_SV57] = 1
@@ -1211,10 +1212,12 @@ static RISCVException read_mstatus(CPURISCVState *env, int csrno,
 
 static int validate_vm(CPURISCVState *env, target_ulong vm)
 {
-    if (riscv_cpu_mxl(env) == MXL_RV32) {
+    if ((riscv_cpu_mxl(env) == MXL_RV32)) {
         return valid_vm_1_10_32[vm & 0xf];
     } else {
-        return valid_vm_1_10_64[vm & 0xf];
+        return valid_vm_1_10_64[vm & 0xf] ||
+               (valid_vm_1_10_32[vm & 0xf] &&
+                env_archcpu(env)->cfg.ilp32_rv64);
     }
 }
 

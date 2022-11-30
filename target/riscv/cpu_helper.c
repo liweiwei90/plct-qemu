@@ -777,6 +777,10 @@ static int get_physical_address(CPURISCVState *env, hwaddr *physical,
     int napot_bits = 0;
     target_ulong napot_mask;
 
+    if (cpu->cfg.ilp32_rv64) {
+        addr &= 0xFFFFFFFF; 
+    }
+
     /*
      * Check if we should use the background registers for the two
      * stage translation. We don't need to check if we actually need
@@ -872,9 +876,10 @@ static int get_physical_address(CPURISCVState *env, hwaddr *physical,
     CPUState *cs = env_cpu(env);
     int va_bits = PGSHIFT + levels * ptidxbits + widened;
     target_ulong mask, masked_msbs;
+    int target_bits = cpu->cfg.ilp32_rv64 ? 32 : TARGET_LONG_BITS;
 
-    if (TARGET_LONG_BITS > (va_bits - 1)) {
-        mask = (1L << (TARGET_LONG_BITS - (va_bits - 1))) - 1;
+    if (target_bits > (va_bits - 1)) {
+        mask = (1L << (target_bits - (va_bits - 1))) - 1;
     } else {
         mask = 0;
     }
@@ -934,7 +939,7 @@ restart:
         }
 
         target_ulong pte;
-        if (riscv_cpu_mxl(env) == MXL_RV32) {
+        if ((riscv_cpu_mxl(env) == MXL_RV32) || cpu->cfg.ilp32_rv64) {
             pte = address_space_ldl(cs->as, pte_addr, attrs, &res);
         } else {
             pte = address_space_ldq(cs->as, pte_addr, attrs, &res);
@@ -944,7 +949,7 @@ restart:
             return TRANSLATE_FAIL;
         }
 
-        if (riscv_cpu_sxl(env) == MXL_RV32) {
+        if ((riscv_cpu_mxl(env) == MXL_RV32) || cpu->cfg.ilp32_rv64) {
             ppn = pte >> PTE_PPN_SHIFT;
         } else if (cpu->cfg.ext_svpbmt || cpu->cfg.ext_svnapot) {
             ppn = (pte & (target_ulong)PTE_PPN_MASK) >> PTE_PPN_SHIFT;

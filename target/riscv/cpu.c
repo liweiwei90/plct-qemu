@@ -1105,6 +1105,7 @@ static Property riscv_cpu_properties[] = {
 
     DEFINE_PROP_BOOL("rvv_ta_all_1s", RISCVCPU, cfg.rvv_ta_all_1s, false),
     DEFINE_PROP_BOOL("rvv_ma_all_1s", RISCVCPU, cfg.rvv_ma_all_1s, false),
+    DEFINE_PROP_BOOL("ilp32_rv64", RISCVCPU, cfg.ilp32_rv64, false),
     DEFINE_PROP_END_OF_LIST(),
 };
 
